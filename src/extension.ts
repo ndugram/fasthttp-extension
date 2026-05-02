@@ -33,6 +33,29 @@ dependencies = [
 ]
 `;
 
+function resolvePython(filePath: string): string {
+    const wsFolder = vscode.workspace.getWorkspaceFolder(
+        vscode.Uri.file(filePath)
+    );
+    const root = wsFolder?.uri.fsPath ?? path.dirname(filePath);
+
+    const candidates = [
+        path.join(root, ".venv", "bin", "python"),
+        path.join(root, "venv", "bin", "python"),
+        path.join(root, "env", "bin", "python"),
+        path.join(root, ".venv", "Scripts", "python.exe"),
+        path.join(root, "venv", "Scripts", "python.exe"),
+    ];
+
+    for (const p of candidates) {
+        if (fs.existsSync(p)) {
+            return p;
+        }
+    }
+
+    return "python3";
+}
+
 export function activate(context: vscode.ExtensionContext) {
     const routeProvider = new RouteProvider(context);
     vscode.window.registerTreeDataProvider("fasthttpRoutes", routeProvider);
@@ -164,8 +187,9 @@ export function activate(context: vscode.ExtensionContext) {
                     vscode.window.showErrorMessage("No file to run");
                     return;
                 }
+                const pythonPath = resolvePython(file);
                 const terminal = vscode.window.createTerminal("FastHTTP");
-                terminal.sendText(`python "${file}"`);
+                terminal.sendText(`"${pythonPath}" "${file}"`);
                 terminal.show();
             }
         )

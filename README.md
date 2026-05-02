@@ -2,7 +2,7 @@
   <img src="https://fasthttp.ndugram.dev/ru/latest/logo.png" style="background:white; padding:12px; border-radius:10px; width:350">
 </p>
 <p align="center">
-    <em>VS Code extension for FastHTTP — scaffold projects directly from the Command Palette.</em>
+    <em>VS Code extension for FastHTTP — scaffold projects, explore routes, and catch errors directly in the editor.</em>
 </p>
 <p align="center">
 <a href="https://marketplace.visualstudio.com/items?itemName=ndugram.fasthttp-extension" target="_blank">
@@ -24,14 +24,17 @@
 
 ---
 
-FastHTTP Extension brings **FastHTTP project scaffolding** into VS Code. One command from the Command Palette — and your project is ready with `main.py`, `requirements.txt`, and `pyproject.toml` pre-filled.
+FastHTTP Extension brings the full **FastHTTP development experience** into VS Code — project scaffolding, route explorer, inline diagnostics, and CodeLens actions.
+
+<img src="images/example.png">
 
 Key features:
 
-- **Fast** — create a ready-to-run FastHTTP project in seconds.
-- **Simple** — single command from the Command Palette, no config needed.
-- **Complete** — generates `main.py`, `requirements.txt`, and `pyproject.toml` with correct defaults.
-- **Integrated** — opens the new project automatically in VS Code after creation.
+- **Create Project** — scaffold a ready-to-run FastHTTP project from the Command Palette in seconds.
+- **Route Explorer** — sidebar panel showing all `@app.get/post/...` routes across your workspace, grouped by file. Click any route to jump to its definition.
+- **CodeLens** — `▶ Run` and `Copy URL` actions appear above every route decorator.
+- **Diagnostics** — inline errors and warnings for missing `async def`, missing `-> ReturnType`, and missing `resp: Response` parameter.
+- **Smart detection** — only activates on files that actually instantiate `FastHTTP()` or `Router()`. No false positives from FastAPI or other frameworks.
 
 ## Requirements
 
@@ -85,29 +88,35 @@ if __name__ == "__main__":
     app.run()
 ```
 
-#### `requirements.txt`
+### Route Explorer
+
+Open the FastHTTP panel in the activity bar to see all routes in your workspace:
 
 ```
-fasthttp-client>=1.2.7
+FASTHTTP ROUTES
+└── main.py  3 routes
+    ├── GET      https://httpbin.org/get        get_data()
+    ├── POST     https://httpbin.org/post       post_data()
+    └── DELETE   https://httpbin.org/delete     delete_data()
 ```
 
-#### `pyproject.toml`
+Click any route → jumps to the decorator in the file. Use the `⟳` button to refresh manually.
 
-```toml
-[project]
-name = "my-project"
-version = "0.1.0"
-requires-python = ">=3.10"
-dependencies = [
-    "fasthttp-client>=1.2.7",
-]
-```
+### Diagnostics
+
+The extension highlights handler errors inline:
+
+| Problem | Severity |
+|---|---|
+| `def` instead of `async def` | ⚠️ Warning |
+| Missing `-> ReturnType` annotation | ❌ Error |
+| Missing `resp: Response` parameter | ⚠️ Warning |
 
 ### Run the generated project
 
 ```console
 $ pip install fasthttp-client
-$ python main.py
+$ python3 main.py
 ```
 
 You will see output like:
@@ -120,7 +129,7 @@ You will see output like:
 
 ## Contributing
 
-Contributions are welcome! Please open an issue or pull request on <a href="https://github.com/ndugram/fasthttp-extension" target="_blank">GitHub</a>.
+Contributions are welcome! Please read [CONTRIBUTING.md](.github/CONTRIBUTING.md) before opening a pull request.
 
 Found a security issue? See the <a href="https://github.com/ndugram/fasthttp-extension/blob/master/SECURITY.md" target="_blank">Security Policy</a>.
 

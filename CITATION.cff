@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "FastHTTP Extension"
+abstract: "VS Code extension for FastHTTP — scaffold FastHTTP projects directly from the Command Palette."
+authors:
+  - family-names: "NEFOR"
+    given-names: "White"
+    alias: "ndugram"
+    email: "n7for8572@gmail.com"
+repository-code: "https://github.com/ndugram/fasthttp-extension"
+url: "https://github.com/ndugram/fasthttp"
+license: MIT
+version: "0.0.1"
+date-released: "2026-05-02"
+keywords:
+  - vscode
+  - extension
+  - fasthttp
+  - python
+  - scaffolding
+  - http-client

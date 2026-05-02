@@ -1,0 +1,102 @@
+{
+  "name": "fasthttp-extension",
+  "displayName": "FastHTTP",
+  "description": "Fast, simple HTTP client with decorator-based routing, async support, and beautiful logging.",
+  "version": "0.0.1",
+  "publisher": "ndugram",
+  "icon": "images/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ndugram/fasthttp-extension"
+  },
+  "homepage": "https://github.com/ndugram/fasthttp-extension#readme",
+  "bugs": {
+    "url": "https://github.com/ndugram/fasthttp-extension/issues"
+  },
+  "keywords": [
+    "fasthttp",
+    "python",
+    "http",
+    "async",
+    "scaffolding",
+    "project",
+    "template"
+  ],
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "Snippets"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "fasthttp-explorer",
+          "title": "FastHTTP",
+          "icon": "images/sidebar-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "fasthttp-explorer": [
+        {
+          "id": "fasthttpRoutes",
+          "name": "Routes"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "fasthttp.createProject",
+        "title": "FastHTTP: Create Project"
+      },
+      {
+        "command": "fasthttp.refreshRoutes",
+        "title": "FastHTTP: Refresh Routes",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "fasthttp.goToRoute",
+        "title": "FastHTTP: Go to Route"
+      },
+      {
+        "command": "fasthttp.copyUrl",
+        "title": "FastHTTP: Copy URL"
+      },
+      {
+        "command": "fasthttp.runProject",
+        "title": "FastHTTP: Run"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "fasthttp.refreshRoutes",
+          "when": "view == fasthttpRoutes",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "fasthttp.copyUrl",
+          "when": "view == fasthttpRoutes && viewItem == route",
+          "group": "inline"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "vscode:prepublish": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.0"
+  }
+}

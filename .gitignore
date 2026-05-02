@@ -1,0 +1,41 @@
+# Compiled output
+out/
+*.js
+*.js.map
+!jest.config.js
+
+# Dependencies
+node_modules/
+
+# Build artifacts
+*.vsix
+dist/
+
+# TypeScript
+*.d.ts
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode-test/
+.vscode/*.log
+
+# Environment
+.env
+.envrc
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Cache
+.eslintcache
+.ruff_cache/

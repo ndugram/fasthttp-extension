@@ -4,6 +4,7 @@ import * as path from "path";
 import { RouteProvider } from "./routeProvider";
 import { FastHTTPCodeLensProvider } from "./codeLensProvider";
 import { FastHTTPDiagnosticsProvider } from "./diagnosticsProvider";
+import { FastHTTPHoverProvider } from "./hoverProvider";
 import type { RouteInfo } from "./routeProvider";
 
 const MAIN_PY = `from fasthttp import FastHTTP
@@ -66,6 +67,31 @@ export function activate(context: vscode.ExtensionContext) {
         { language: "python" },
         new FastHTTPCodeLensProvider()
     );
+
+    context.subscriptions.push(
+        vscode.languages.registerHoverProvider(
+            { language: "python" },
+            new FastHTTPHoverProvider()
+        )
+    );
+
+    const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+    statusBar.command = "fasthttp.refreshRoutes";
+    statusBar.tooltip = "FastHTTP routes — click to refresh";
+    context.subscriptions.push(statusBar);
+
+    const updateStatusBar = () => {
+        const count = routeProvider.getRouteCount();
+        if (count > 0) {
+            statusBar.text = `$(symbol-method) ${count} route${count !== 1 ? "s" : ""}`;
+            statusBar.show();
+        } else {
+            statusBar.hide();
+        }
+    };
+
+    routeProvider.onDidChangeTreeData(() => updateStatusBar());
+    updateStatusBar();
 
     context.subscriptions.push(
         vscode.commands.registerCommand("fasthttp.createProject", async () => {

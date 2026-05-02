@@ -35,7 +35,7 @@ export function findFastHTTPInstances(lines: string[]): Set<string> {
     return names;
 }
 
-function buildDecoratorRE(names: Set<string>): RegExp {
+export function buildDecoratorRE(names: Set<string>): RegExp {
     const escaped = [...names].map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
     return new RegExp(
         `@(${escaped})\\.(get|post|put|patch|delete|head|options|graphql)\\s*\\(\\s*url\\s*=\\s*["'](https?:\\/\\/[^"']+)["']`,
@@ -200,6 +200,14 @@ export class RouteProvider
                 uris.forEach((uri) => this.parseFile(uri.fsPath));
                 this._onDidChangeTreeData.fire();
             });
+    }
+
+    getRouteCount(): number {
+        let total = 0;
+        for (const routes of this.routesByFile.values()) {
+            total += routes.length;
+        }
+        return total;
     }
 
     getTreeItem(element: vscode.TreeItem): vscode.TreeItem {

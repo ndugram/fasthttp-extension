@@ -21,10 +21,27 @@ const METHOD_ICONS: Record<string, string> = {
     GRAPHQL: "symbol-interface",
 };
 
-const DECORATOR_RE =
-    /@(?:\w+)\.(get|post|put|patch|delete|head|options|graphql)\s*\(\s*(?:url\s*=\s*)?["']([^"']+)["']/i;
-
+const INSTANCE_RE = /^(\w+)\s*=\s*(?:FastHTTP|Router)\s*\(/m;
 const FUNC_RE = /^\s*(?:async\s+)?def\s+(\w+)/;
+
+export function findFastHTTPInstances(lines: string[]): Set<string> {
+    const names = new Set<string>();
+    for (const line of lines) {
+        const m = INSTANCE_RE.exec(line);
+        if (m) {
+            names.add(m[1]);
+        }
+    }
+    return names;
+}
+
+function buildDecoratorRE(names: Set<string>): RegExp {
+    const escaped = [...names].map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+    return new RegExp(
+        `@(${escaped})\\.(get|post|put|patch|delete|head|options|graphql)\\s*\\(\\s*url\\s*=\\s*["'](https?:\\/\\/[^"']+)["']`,
+        "i"
+    );
+}
 
 export function parseRoutesFromFile(filePath: string): RouteInfo[] {
     let content: string;
@@ -34,17 +51,24 @@ export function parseRoutesFromFile(filePath: string): RouteInfo[] {
         return [];
     }
 
-    const routes: RouteInfo[] = [];
     const lines = content.split("\n");
+    const instances = findFastHTTPInstances(lines);
+
+    if (instances.size === 0) {
+        return [];
+    }
+
+    const decoratorRE = buildDecoratorRE(instances);
+    const routes: RouteInfo[] = [];
 
     for (let i = 0; i < lines.length; i++) {
-        const m = DECORATOR_RE.exec(lines[i]);
+        const m = decoratorRE.exec(lines[i]);
         if (!m) {
             continue;
         }
 
-        const method = m[1].toUpperCase();
-        const url = m[2];
+        const method = m[2].toUpperCase();
+        const url = m[3];
 
         let funcName = "unknown";
         for (let j = i + 1; j < Math.min(i + 6, lines.length); j++) {
@@ -114,7 +138,7 @@ export class RouteProvider
 
     private routesByFile = new Map<string, RouteInfo[]>();
 
-    constructor(private context: vscode.ExtensionContext) {
+    constructor(context: vscode.ExtensionContext) {
         vscode.workspace.onDidSaveTextDocument(
             (doc) => {
                 if (doc.languageId === "python") {
@@ -171,7 +195,7 @@ export class RouteProvider
         });
 
         vscode.workspace
-            .findFiles("**/*.py", "**/node_modules/**", 100)
+            .findFiles("**/*.py", "{**/node_modules/**,**/.venv/**,**/venv/**,**/env/**,**/__pycache__/**}", 100)
             .then((uris) => {
                 uris.forEach((uri) => this.parseFile(uri.fsPath));
                 this._onDidChangeTreeData.fire();

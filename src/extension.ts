@@ -3,6 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { RouteProvider } from "./routeProvider";
 import { FastHTTPCodeLensProvider } from "./codeLensProvider";
+import { FastHTTPDiagnosticsProvider } from "./diagnosticsProvider";
 import type { RouteInfo } from "./routeProvider";
 
 const MAIN_PY = `from fasthttp import FastHTTP
@@ -35,6 +36,8 @@ dependencies = [
 export function activate(context: vscode.ExtensionContext) {
     const routeProvider = new RouteProvider(context);
     vscode.window.registerTreeDataProvider("fasthttpRoutes", routeProvider);
+
+    new FastHTTPDiagnosticsProvider(context);
 
     vscode.languages.registerCodeLensProvider(
         { language: "python" },

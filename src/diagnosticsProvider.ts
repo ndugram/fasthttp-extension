@@ -1,7 +1,12 @@
 import * as vscode from "vscode";
 import { findFastHTTPInstances } from "./routeProvider";
 
-const INSTANCE_RE = /^(\w+)\s*=\s*(?:FastHTTP|Router)\s*\(/;
+export const DIAG_MISSING_ASYNC  = "fasthttp.missing-async";
+export const DIAG_MISSING_RETURN = "fasthttp.missing-return";
+export const DIAG_MISSING_RESP   = "fasthttp.missing-resp";
+export const DIAG_DUPLICATE_URL  = "fasthttp.duplicate-url";
+
+const URL_RE = /url\s*=\s*["'](https?:\/\/[^"']+)["']/;
 
 function buildDecoratorRE(names: Set<string>): RegExp {
     const escaped = [...names]
@@ -104,8 +109,10 @@ export class FastHTTPDiagnosticsProvider {
 
         const decoratorRE = buildDecoratorRE(instances);
 
+        // Handler quality diagnostics
         for (let i = 0; i < lines.length; i++) {
-            if (!decoratorRE.test(lines[i])) {
+            const decoratorMatch = decoratorRE.exec(lines[i]);
+            if (!decoratorMatch) {
                 continue;
             }
 
@@ -123,13 +130,14 @@ export class FastHTTPDiagnosticsProvider {
                     sig.lineIndex,
                     defLine.text.length
                 );
-                diagnostics.push(
-                    new vscode.Diagnostic(
-                        range,
-                        "FastHTTP handler must be `async def`",
-                        vscode.DiagnosticSeverity.Warning
-                    )
+                const d = new vscode.Diagnostic(
+                    range,
+                    "FastHTTP handler must be `async def`",
+                    vscode.DiagnosticSeverity.Warning
                 );
+                d.code = DIAG_MISSING_ASYNC;
+                d.source = "fasthttp";
+                diagnostics.push(d);
             }
 
             if (!sig.returnType) {
@@ -144,6 +152,7 @@ export class FastHTTPDiagnosticsProvider {
                     "FastHTTP handler missing return type annotation `-> Type`",
                     vscode.DiagnosticSeverity.Error
                 );
+                d.code = DIAG_MISSING_RETURN;
                 d.source = "fasthttp";
                 diagnostics.push(d);
             }
@@ -161,6 +170,51 @@ export class FastHTTPDiagnosticsProvider {
                     "FastHTTP handler missing `resp: Response` parameter",
                     vscode.DiagnosticSeverity.Warning
                 );
+                d.code = DIAG_MISSING_RESP;
+                d.source = "fasthttp";
+                diagnostics.push(d);
+            }
+        }
+
+        // Duplicate URL detection
+        const urlMap = new Map<string, number[]>();
+
+        for (let i = 0; i < lines.length; i++) {
+            const methodMatch = decoratorRE.exec(lines[i]);
+            if (!methodMatch) {
+                continue;
+            }
+            const urlMatch = URL_RE.exec(lines[i]);
+            if (!urlMatch) {
+                continue;
+            }
+            const key = `${methodMatch[2].toUpperCase()}:${urlMatch[1]}`;
+            if (!urlMap.has(key)) {
+                urlMap.set(key, []);
+            }
+            urlMap.get(key)!.push(i);
+        }
+
+        for (const [key, lineNums] of urlMap) {
+            if (lineNums.length < 2) {
+                continue;
+            }
+            const [method, url] = key.split(/:(.+)/);
+            for (const lineNum of lineNums) {
+                const lineText = lines[lineNum];
+                const atIdx = lineText.indexOf("@");
+                const range = new vscode.Range(
+                    lineNum,
+                    atIdx >= 0 ? atIdx : 0,
+                    lineNum,
+                    lineText.length
+                );
+                const d = new vscode.Diagnostic(
+                    range,
+                    `Duplicate route: ${method} "${url}" defined ${lineNums.length} times in this file`,
+                    vscode.DiagnosticSeverity.Warning
+                );
+                d.code = DIAG_DUPLICATE_URL;
                 d.source = "fasthttp";
                 diagnostics.push(d);
             }

@@ -5,6 +5,7 @@ import { RouteProvider } from "./routeProvider";
 import { FastHTTPCodeLensProvider } from "./codeLensProvider";
 import { FastHTTPDiagnosticsProvider } from "./diagnosticsProvider";
 import { FastHTTPHoverProvider } from "./hoverProvider";
+import { FastHTTPQuickFixProvider } from "./quickFixProvider";
 import type { RouteInfo } from "./routeProvider";
 
 const MAIN_PY = `from fasthttp import FastHTTP
@@ -72,6 +73,14 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.languages.registerHoverProvider(
             { language: "python" },
             new FastHTTPHoverProvider()
+        )
+    );
+
+    context.subscriptions.push(
+        vscode.languages.registerCodeActionsProvider(
+            { language: "python" },
+            new FastHTTPQuickFixProvider(),
+            { providedCodeActionKinds: FastHTTPQuickFixProvider.providedCodeActionKinds }
         )
     );
 

@@ -2,7 +2,7 @@
   "name": "fasthttp-extension",
   "displayName": "FastHTTP",
   "description": "Fast, simple HTTP client with decorator-based routing, async support, and beautiful logging.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publisher": "ndugram",
   "icon": "images/icon.png",
   "repository": {
